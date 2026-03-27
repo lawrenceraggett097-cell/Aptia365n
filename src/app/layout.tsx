@@ -20,11 +20,11 @@ export const metadata: Metadata = {
      "aptia"
   ],
 
-  openGraph: {
-    type: 'website',
-    URL: "",
-    siteName: "APtia365"
-  }
+  // openGraph: {
+  //   type: 'website',
+  //   URL: "",
+  //   siteName: "APtia365"
+  // },
 };
 
 export default function RootLayout({
